@@ -21,7 +21,7 @@ long startTime = 0;
 int contaPeligro = 0;
 
 void setup() {
-   Serial.begin(9600);
+   //Serial.begin(9600);
    pinMode(TriggerPin, OUTPUT);
    pinMode(EchoPin, INPUT);
    pinMode(BOTON, INPUT_PULLUP);//resistor de pull-up para entrada del pulsador
@@ -39,8 +39,8 @@ void setup() {
  
 void loop() {
     int distancia = ping();
-    Serial.print("Distancia: ");
-    Serial.println(distancia);
+    //Serial.print("Distancia: ");
+    //Serial.println(distancia);
     if(distancia<=conta){
       contaPeligro++;
       if(contaPeligro>=3){//si 3 mediciones seguidas supera el umbral, suena la alarma
@@ -60,7 +60,8 @@ void sonarAlarma(){
  * Funcion que calcula y devuelve la distancia en cm mediante el uso del sensor ultrasonico
  */
 int ping() {
-   long duration, distanceCm;  
+   float duration, distanceCm;  
+   int distanciaInt;
    digitalWrite(TriggerPin, LOW);  //para generar un pulso limpio ponemos a LOW 4us
    delayMicroseconds(4);
    digitalWrite(TriggerPin, HIGH);  //generamos Trigger (disparo) de 10us
@@ -68,7 +69,15 @@ int ping() {
    digitalWrite(TriggerPin, LOW);
    duration = pulseIn(EchoPin, HIGH);  //medimos el tiempo entre pulsos, en microsegundos
    distanceCm = duration * 10 / 292/ 2;   //convertimos a distancia, en cm
-   return distanceCm;
+  // Serial.print("distancia sin truncar:");
+  // Serial.println(distanceCm);
+   distanciaInt=(int)distanceCm;
+   if((distanceCm-distanciaInt)<0.5){
+      return (int)distanceCm;//truncamos
+   }else{
+      return ((int)distanceCm+1);//redondeo para arriba
+   }
+   
 }
 /*
  * Muestra en un display de 7 segmentos el numero indicado
@@ -132,6 +141,7 @@ if(millis() - startTime > umbralAntirebote){
           conta=0;
         }
       }
+      contaPeligro=0;
       startTime = millis();
       mostrarNum(conta);
    }
